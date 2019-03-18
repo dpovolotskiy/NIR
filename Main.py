@@ -1,11 +1,12 @@
 import collections
 import copy
+import math
 
 
 def parse_graph6(str_graph):
     byte = str_graph.encode('UTF-8')
     n = byte[0] - 63
-    graph = {i:[] for i in range(n)}
+    graph = {i: [] for i in range(n)}
     code_string = ""
     for i in range(1, len(byte)):
         code_string += format(byte[i] - 63, '06b')
@@ -34,6 +35,7 @@ def breadth_first_search(graph, root):
                 d[neighbour] = d[vertex] + 1
             else:
                 return d[vertex] + d[neighbour] + 1
+    return math.inf
 
 
 def girth(graph):
@@ -47,7 +49,7 @@ def main():
     str_graph = input()
     graph = parse_graph6(str_graph)
     with open("grith_of_graphs.txt", "w") as output:
-        output.write("Обхват графа {} равен: {}.\n".format(graph, girth(graph)))
+        output.write("Обхват графа {}: {};\n".format(str_graph, girth(graph)))
 
 
 if __name__ == '__main__':
