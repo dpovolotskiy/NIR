@@ -1,6 +1,7 @@
 import collections
 import copy
 import math
+import prettytable
 
 
 def parse_graph6(str_graph):
@@ -22,7 +23,7 @@ def parse_graph6(str_graph):
 
 def breadth_first_search(graph, root):
     new_graph = copy.deepcopy(graph)
-    d, visited, queue = [0 for i in range(len(new_graph))], set(), collections.deque([root])
+    d, visited, queue = [0 for _ in range(len(new_graph))], set(), collections.deque([root])
     visited.add(root)
     while queue:
         vertex = queue.popleft()
@@ -45,11 +46,34 @@ def girth(graph):
     return min(len_of_cycles)
 
 
+def analyse_graph():
+    result = {}
+    try:
+        str_graph = input()
+        while str_graph != "":
+            graph = parse_graph6(str_graph)
+            result[str_graph] = girth(graph)
+            str_graph = input()
+    except EOFError:
+        result_str = ""
+        count_girths = {}
+        for key, value in result.items():
+            count_girths[value] = count_girths.setdefault(value, 0) + 1
+            result_str += "Girth of graph: {}, equals: {};\n".format(key, value)
+        count_girths = dict(sorted(count_girths.items(), key=lambda girth: girth[1]))
+        x = prettytable.PrettyTable()
+        x.field_names = ["Girth", "Number of graph with this girth"]
+        for key, value in count_girths.items():
+            x.add_row([key, value])
+        with open("girth_of_graphs.txt", "w") as output:
+            output.write(result_str)
+            output.write(x.get_string())
+    finally:
+        print("Analyse of graphs was finished!\n")
+
+
 def main():
-    str_graph = input()
-    graph = parse_graph6(str_graph)
-    with open("grith_of_graphs.txt", "w") as output:
-        output.write("Обхват графа {}: {};\n".format(str_graph, girth(graph)))
+    analyse_graph()
 
 
 if __name__ == '__main__':
