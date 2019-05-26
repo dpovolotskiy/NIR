@@ -7,6 +7,8 @@ import os
 import prettytable
 import argparse
 
+colour_list = []
+
 
 def parse_graph6(str_graph):
     byte = str_graph.encode('UTF-8')
@@ -51,12 +53,12 @@ def girth(graph):
 
 
 def chromatic_number(graph):
-    colour_list = []
     for i in range(1, 999):
-        path = "{}.txt".format(i)
+        path = "Permutations/{}.txt".format(i)
         if os.path.exists(path):
             with open(path, "r") as permutation_list:
-                for permutation in permutation_list.readlines():
+                for permutation_str in permutation_list:
+                    permutation = permutation_str.rstrip()[1:-1].split(", ")
                     correct_permutation = True
                     for vertex in graph.keys():
                         if correct_permutation:
@@ -72,7 +74,11 @@ def chromatic_number(graph):
         else:
             n = len(graph)
             colour_list.append(i)
-            for permutation in itertools.product(colour_list, repeat=n):
+            permutation_list = list(itertools.product(colour_list, repeat=n))
+            with open("Permutations/{}.txt".format(i), "w") as save_permutations:
+                for permutation in permutation_list:
+                    save_permutations.write(str(permutation) + "\n")
+            for permutation in permutation_list:
                 correct_permutation = True
                 for vertex in graph.keys():
                     if correct_permutation:
@@ -89,7 +95,7 @@ def chromatic_number(graph):
 
 def analyse_graph():
     for i in range(1, 99):
-        path = "{}.txt".format(i)
+        path = "Permutations/{}.txt".format(i)
         if os.path.exists(path):
             os.remove(path)
         else:
@@ -153,7 +159,7 @@ def analyse_graph():
             print("Analyse of graphs was finished!\n")
     else:
         with open(args.file, "r") as graph_file:
-            for str_graph in graph_file.readlines():
+            for str_graph in graph_file:
                 str_graph = str_graph.rstrip()
                 graph = parse_graph6(str_graph)
                 result_girth[str_graph] = girth(graph)
