@@ -1,13 +1,29 @@
 import collections
 import copy
-import itertools
 import math
-import os
 
 import prettytable
 import argparse
 
-colour_list = []
+
+def check_colour(graph, permutation):
+    for vertex in graph.keys():
+        for neighbour in graph[vertex]:
+            if permutation[neighbour] == permutation[vertex]:
+                return False
+    return True
+
+
+def minimize_colour(permutation):
+    min_colour = {}
+    cnt = 1
+    result_permutation = []
+    for e in permutation:
+        if e not in min_colour:
+            min_colour[e] = cnt
+            cnt += 1
+        result_permutation.append(min_colour[e])
+    return result_permutation
 
 
 def parse_graph6(str_graph):
@@ -52,55 +68,32 @@ def girth(graph):
     return min(len_of_cycles)
 
 
-def chromatic_number(graph):
-    for i in range(1, 999):
-        path = "Permutations/{}.txt".format(i)
-        if os.path.exists(path):
-            with open(path, "r") as permutation_list:
-                for permutation_str in permutation_list:
-                    permutation = permutation_str.rstrip()[1:-1].split(", ")
-                    correct_permutation = True
-                    for vertex in graph.keys():
-                        if correct_permutation:
-                            for neighbour in graph[vertex]:
-                                if permutation[neighbour] == permutation[vertex]:
-                                    correct_permutation = False
-                                if not correct_permutation:
-                                    break
-                        else:
-                            break
-                    if correct_permutation:
-                        return i
-        else:
-            n = len(graph)
-            colour_list.append(i)
-            permutation_list = list(itertools.product(colour_list, repeat=n))
-            with open("Permutations/{}.txt".format(i), "w") as save_permutations:
-                for permutation in permutation_list:
-                    save_permutations.write(str(permutation) + "\n")
-            for permutation in permutation_list:
-                correct_permutation = True
-                for vertex in graph.keys():
-                    if correct_permutation:
-                        for neighbour in graph[vertex]:
-                            if permutation[neighbour] == permutation[vertex]:
-                                correct_permutation = False
-                            if not correct_permutation:
-                                break
-                    else:
-                        break
-                if correct_permutation:
-                    return i
+def chromatic_number(graph, graph_girth):
+    if graph_girth == math.inf:
+        return 2
+    n = len(graph)
+    if graph_girth % 2 == 0:
+        start = 2
+    else:
+        start = 3
+    for cn in range(start, 99):
+        permutation = [1 for _ in range(n)]
+        i = len(permutation) - 1
+        while i >= 0:
+            while permutation[i] <= cn:
+                if minimize_colour(permutation) >= permutation:
+                    if check_colour(graph, permutation):
+                        return cn
+                permutation[i] += 1
+            while permutation[i] >= cn:
+                permutation[i] = 1
+                i -= 1
+            if i >= 0:
+                permutation[i] += 1
+                i = len(permutation) - 1
 
 
 def analyse_graph():
-    for i in range(1, 99):
-        path = "Permutations/{}.txt".format(i)
-        if os.path.exists(path):
-            os.remove(path)
-        else:
-            break
-
     main_table = prettytable.PrettyTable()
     main_table.field_names = ["Graph6", "Number of vertexes", "Number of edges", "Girth",
                               "Chromatic number"]
@@ -115,12 +108,12 @@ def analyse_graph():
             while str_graph != "":
                 graph = parse_graph6(str_graph)
                 result_girth[str_graph] = girth(graph)
-                result_chromatic_number[str_graph] = chromatic_number(graph)
+                result_chromatic_number[str_graph] = chromatic_number(graph, result_girth[str_graph])
                 number_of_vertexes = len(graph)
                 number_of_edges = 0
                 for vertex in graph.keys():
                     number_of_edges += len(graph[vertex])
-                result_to_table = [str_graph, number_of_vertexes, number_of_edges, result_girth[str_graph],
+                result_to_table = [str_graph, number_of_vertexes, number_of_edges//2, result_girth[str_graph],
                                    result_chromatic_number[str_graph]]
                 main_table.add_row(result_to_table)
                 str_graph = input()
@@ -163,12 +156,12 @@ def analyse_graph():
                 str_graph = str_graph.rstrip()
                 graph = parse_graph6(str_graph)
                 result_girth[str_graph] = girth(graph)
-                result_chromatic_number[str_graph] = chromatic_number(graph)
+                result_chromatic_number[str_graph] = chromatic_number(graph, result_girth[str_graph])
                 number_of_vertexes = len(graph)
                 number_of_edges = 0
                 for vertex in graph.keys():
                     number_of_edges += len(graph[vertex])
-                result_to_table = [str_graph, number_of_vertexes, number_of_edges, result_girth[str_graph],
+                result_to_table = [str_graph, number_of_vertexes, number_of_edges//2, result_girth[str_graph],
                                    result_chromatic_number[str_graph]]
                 main_table.add_row(result_to_table)
 
